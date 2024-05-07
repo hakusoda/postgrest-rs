@@ -1,4 +1,5 @@
 {
 	"rust-analyzer.check.command": "clippy",
+	//"rust-analyzer.cargo.features": ["simd-json"],
 	"rust-analyzer.linkedProjects": ["./Cargo.toml"]
 }

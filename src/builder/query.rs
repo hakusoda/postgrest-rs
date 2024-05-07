@@ -1,7 +1,7 @@
 use serde::{ de::DeserializeOwned, Serialize };
 use reqwest::{ header::HeaderMap, Method };
 
-use crate::{ json, PostgrestClient };
+use crate::{ Result, PostgrestClient };
 use super::FilterBuilder;
 
 pub struct QueryBuilder<'a> {
@@ -46,8 +46,8 @@ impl<'a> QueryBuilder<'a> {
 	}
 
 	/// Perform an INSERT into the table or view.
-	pub fn insert<T: Serialize>(mut self, values: T) -> json::Result<FilterBuilder<'a, (), ()>> {
-		let value = json::to_value(values)?;
+	pub fn insert<T: Serialize>(mut self, values: T) -> Result<FilterBuilder<'a, (), ()>> {
+		let value = serde_json::to_value(values)?;
 
 		// https://github.com/supabase/postgrest-js/blob/03a811da4e16ff76baa2eb96891770c5b8ee5ac9/src/PostgrestQueryBuilder.ts#L164
 		if let Some(array) = value.as_array() {
@@ -69,25 +69,8 @@ impl<'a> QueryBuilder<'a> {
 	}
 
 	/// Perform an UPDATE on the table or view.
-	pub fn update<T: Serialize>(mut self, values: T) -> json::Result<FilterBuilder<'a, (), ()>> {
-		let value = json::to_value(values)?;
-
-		// https://github.com/supabase/postgrest-js/blob/03a811da4e16ff76baa2eb96891770c5b8ee5ac9/src/PostgrestQueryBuilder.ts#L164
-		if let Some(array) = value.as_array() {
-			// this is untested
-			let mut columns = array.iter().fold(vec![], |mut acc, value| {
-				if let Some(map) = value.as_object() {
-					acc.extend(map.keys());
-				}
-				acc
-			});
-			if !columns.is_empty() {
-				columns.sort();
-				columns.dedup();
-				self.query.push(("columns", columns.into_iter().map(|x| format!("\"{x}\"")).collect::<Vec<String>>().join(",")))
-			}
-		}
-
+	pub fn update<T: Serialize>(self, values: T) -> Result<FilterBuilder<'a, (), ()>> {
+		let value = serde_json::to_value(values)?;
 		Ok(FilterBuilder::new(self, Method::PATCH, Some(value)))
 	}
 }

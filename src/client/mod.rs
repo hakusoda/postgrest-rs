@@ -158,4 +158,30 @@ mod tests {
 			.unwrap();
 		assert_eq!(result.item_count, 0);
 	}
+
+	#[tokio::test]
+	async fn test_insert() {
+		let result = client()
+			.from("mellow_test")
+			.insert(serde_json::json!({
+				"data": 1.43
+			}))
+			.unwrap()
+			.await
+			.unwrap();
+		assert_eq!(result.item_count, 0);
+	}
+
+	#[tokio::test]
+	async fn test_update() {
+		client()
+			.from("mellow_test")
+			.update(serde_json::json!({
+				"data": 0.143
+			}))
+			.unwrap()
+			.eq("id", 1)
+			.await
+			.unwrap();
+	}
 }

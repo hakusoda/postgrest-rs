@@ -6,6 +6,10 @@ pub enum Error {
 	#[error("Json Error: {0}")]
 	JsonError(#[from] crate::json::Error),
 
+	#[cfg(feature = "simd-json")]
+	#[error("Serde Error: {0}")]
+	SerdeError(#[from] serde_json::Error),
+
 	#[error("Reqwest Error: {0}")]
 	ReqwestError(#[from] reqwest::Error),
 

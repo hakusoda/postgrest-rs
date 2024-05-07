@@ -26,7 +26,7 @@ pub struct FilterBuilder<'a, T: DeserializeOwned, F: DeserializeOwned> {
 	url: Option<String>,
 	#[allow(clippy::type_complexity)]
 	fut: Option<Pin<Box<dyn Future<Output = Result<PostgrestResult<F>>> + Send + 'a>>>,
-	body: Option<json::Value>,
+	body: Option<serde_json::Value>,
 	count: Option<Count>,
 	query: Option<Vec<(&'static str, String)>>,
 	method: Option<Method>,
@@ -38,7 +38,7 @@ pub struct FilterBuilder<'a, T: DeserializeOwned, F: DeserializeOwned> {
 }
 
 impl<'a, T: DeserializeOwned, F: DeserializeOwned> FilterBuilder<'a, T, F> {
-	pub fn new(query: QueryBuilder<'a>, method: Method, body: Option<json::Value>) -> Self {
+	pub fn new(query: QueryBuilder<'a>, method: Method, body: Option<serde_json::Value>) -> Self {
 		Self {
 			fut: None,
 			url: Some(query.url),
@@ -189,6 +189,7 @@ impl<'a, T: DeserializeOwned + Unpin, F: DeserializeOwned + Unpin> Future for Fi
 					bytes = Bytes::from("[]");
 				}
 				
+				println!("{}", std::str::from_utf8(&bytes).unwrap());
 				match is_success {
 					true => Ok(PostgrestResult {
 						value: match is_maybe_single {
